@@ -25,11 +25,11 @@ return new class extends Migration
                 ->comment('Уникальный адрес электронной почты');
             $table->timestamp('email_verified_at')
                 ->nullable();
-            $table->string('password');
             $table->string('phone', 20)
                 ->nullable()
                 ->unique()
                 ->comment('Номер телефона пользователя');
+            $table->string('password');
             $table->timestamps();
         });
     }
