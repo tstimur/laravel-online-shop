@@ -8,6 +8,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -15,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
  * @property string $first_name
  * @property string $last_name
  * @property string $email
- * @property string $phone
+ * @property string|null $phone
  * @property string $password
  *
  * @property-read string $full_name
@@ -64,13 +65,13 @@ class User extends Authenticatable
     }
 
     /** Связь с заказами */
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
     /** Связь с корзинами */
-    public function carts()
+    public function carts(): HasMany
     {
         return $this->hasMany(Cart::class);
     }
