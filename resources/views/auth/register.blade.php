@@ -10,7 +10,7 @@
                     <div class="card-body p-3 p-sm-4 p-md-5">
                         <h2 class="text-center mb-3 mb-md-4 h3 h2-md">Регистрация</h2>
 
-                        <form method="POST" action="{{ route('register.store') }}">
+                        <form method="POST" action="{{ route('register') }}">
                             @csrf
 
                             <div class="row g-2 g-md-3">
@@ -84,6 +84,13 @@
                                     Зарегистрироваться
                                 </button>
                             </div>
+
+                            <p class="text-center text-sm text-gray-600 mt-4">
+                                Уже есть аккаунт?
+                                <a href="{{ route('login.form') }}" class="text-blue-600 hover:text-blue-800 font-medium">
+                                    Войти
+                                </a>
+                            </p>
 
                         </form>
                     </div>

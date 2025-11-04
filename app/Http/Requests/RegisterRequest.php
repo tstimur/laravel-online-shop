@@ -24,10 +24,21 @@ class RegisterRequest extends FormRequest
         ];
     }
 
+    /**
+     * Возвращает сообщение об ошибке на отдельное взятое правило
+     *
+     * @return string[]
+     */
     public function messages(): array
     {
         return [
+            'email.required' => 'Введите email',
+            'email.email' => 'Неверный формат email',
             'email.unique' => 'Пользователь с таким email уже зарегистрирован.',
+            'password.min' => 'Пароль должен быть не менее 8 символов',
+            'password.required' => 'Введите пароль',
+            'first_name.required' => 'Введите имя',
+            'last_name.required' => 'Введите фамилию'
         ];
     }
 
