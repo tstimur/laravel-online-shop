@@ -7,8 +7,11 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class RegisterRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
@@ -22,12 +25,11 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name'  => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password'   => ['required', 'string', 'min:8', 'confirmed'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string', 'min:8'],
         ];
     }
+
 
     /**
      * Возвращает сообщение об ошибке на отдельное взятое правило
@@ -39,11 +41,8 @@ class RegisterRequest extends FormRequest
         return [
             'email.required' => 'Введите email',
             'email.email' => 'Неверный формат email',
-            'email.unique' => 'Пользователь с таким email уже зарегистрирован.',
-            'password.min' => 'Пароль должен быть не менее 8 символов',
             'password.required' => 'Введите пароль',
-            'first_name.required' => 'Введите имя',
-            'last_name.required' => 'Введите фамилию'
+            'password.min' => 'Пароль должен быть не менее 8 символов',
         ];
     }
 }
