@@ -7,10 +7,13 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libzip-dev \
+    zlib1g-dev \
     libicu-dev \
     libpq-dev \
     libxml2-dev \
     libcurl4-openssl-dev \
+    libonig-dev \
+    && docker-php-ext-configure intl \
     && docker-php-ext-install -j$(nproc) \
         intl \
         zip \
@@ -20,7 +23,6 @@ RUN apt-get update && apt-get install -y \
         xml \
         bcmath \
         mbstring \
-        tokenizer \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Xdebug
