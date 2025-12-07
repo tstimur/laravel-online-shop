@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Service;
@@ -7,7 +8,6 @@ use App\DTO\RegisterDto;
 use App\DTO\UpdateProfileDto;
 use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -15,8 +15,8 @@ use Illuminate\Validation\ValidationException;
 class UserService
 {
     public function __construct(
-    )
-    {}
+    ) {
+    }
     public function register(RegisterDto $dto): User
     {
         $user = new User();
@@ -54,8 +54,7 @@ class UserService
         User $user,
         string $currentPassword,
         string $newPassword
-    ): void
-    {
+    ): void {
         if (!Hash::check($currentPassword, $user->password)) {
             throw ValidationException::withMessages(['current_password' => 'Invalid current password']);
         }

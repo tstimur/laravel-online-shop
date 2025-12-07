@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\DTO;
 
@@ -14,7 +14,8 @@ class RegisterDto extends Data
         public string $lastName,
         public string $email,
         public string $password,
-    ) {}
+    ) {
+    }
 
     public static function fromRequest(RegisterRequest $request): self
     {
