@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
+Route::view('/', 'main')->name('home');
+
 Route::middleware('guest')->group(function () {
     // registration
     Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register.form');

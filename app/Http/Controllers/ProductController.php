@@ -17,10 +17,12 @@ class ProductController extends Controller
     {
         $dto = ProductFilterDto::fromRequest($request);
         $products = $service->getProducts($dto);
+        $maxProductPrice = $service->getMaxProductPrice();
 
         return view('products.index', [
             'products' => $products,
             'dto'      => $dto,
+            'maxProductPrice' => $maxProductPrice,
         ]);
     }
 

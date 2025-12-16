@@ -18,7 +18,7 @@
                                 <h3 class="mb-3">Начните покупки прямо сейчас!</h3>
                                 <p class="text-muted mb-4">Выберите категорию товаров или воспользуйтесь поиском</p>
                                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                                    <a href="#" class="btn btn-primary btn-lg">Каталог товаров</a>
+                                    <a href="{{ route('products.index') }}" class="btn btn-primary btn-lg">Каталог товаров</a>
                                     <a href="#" class="btn btn-outline-primary btn-lg">О магазине</a>
                                 </div>
                             </div>
