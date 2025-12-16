@@ -27,13 +27,4 @@ class ProductService
             ->paginate($perPage)
             ->withQueryString();
     }
-
-    /**
-     * Возвращает конкретный товар.
-     */
-    public function getProduct(Product $product): Product
-    {
-
-        return $product;
-    }
 }
