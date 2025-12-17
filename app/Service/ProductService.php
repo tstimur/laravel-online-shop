@@ -24,7 +24,7 @@ class ProductService
     {
         $query = Product::query();
 
-        if ($dto->q) {
+        if ($dto->q !== null) {
             $like = '%' . $dto->q . '%';
             $query->where(function ($q) use ($like): void {
                 $q->where('name', 'like', $like)
