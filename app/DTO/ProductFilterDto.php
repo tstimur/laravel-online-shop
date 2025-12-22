@@ -33,4 +33,3 @@ class ProductFilterDto extends Data
         );
     }
 }
-

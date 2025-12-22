@@ -7,6 +7,7 @@ namespace App\Service;
 use App\DTO\ProductFilterDto;
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductService
 {
@@ -20,10 +21,52 @@ class ProductService
         return $max;
     }
 
+    public function getMaxProductPriceForCategoryId(int $categoryId): ?string
+    {
+        /** @var string|null $max */
+        $max = Product::query()
+            ->where('category_id', $categoryId)
+            ->max('price');
+
+        return $max;
+    }
+
     public function getProducts(ProductFilterDto $dto): LengthAwarePaginator
     {
-        $query = Product::query();
+        $query = Product::query()->with('category');
+        $this->applyFilters($query, $dto);
 
+        $perPage = in_array($dto->per_page, self::PER_PAGE_OPTIONS, true) ? $dto->per_page : 10;
+
+        return $query
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    public function getProductsByCategoryId(int $categoryId, ProductFilterDto $dto): LengthAwarePaginator
+    {
+        $query = Product::query()
+            ->with('category')
+            ->where('category_id', $categoryId);
+
+        $this->applyFilters($query, $dto);
+
+        $perPage = in_array($dto->per_page, self::PER_PAGE_OPTIONS, true) ? $dto->per_page : 10;
+
+        return $query
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    public function getProduct(Product $product): Product
+    {
+        return $product->load('category');
+    }
+
+    private function applyFilters(Builder $query, ProductFilterDto $dto): void
+    {
         if ($dto->q !== null) {
             $like = '%' . $dto->q . '%';
             $query->where(function ($q) use ($like): void {
@@ -68,17 +111,5 @@ class ProductService
                 $query->orderByDesc('created_at');
                 break;
         }
-
-        $perPage = in_array($dto->per_page, self::PER_PAGE_OPTIONS, true) ? $dto->per_page : 10;
-
-        return $query
-            ->orderByDesc('id')
-            ->paginate($perPage)
-            ->withQueryString();
-    }
-
-    public function getProduct(Product $product): Product
-    {
-        return $product;
     }
 }

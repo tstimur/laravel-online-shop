@@ -6,13 +6,32 @@
 @php($sort = $dto->sort ?? 'new')
 @php($maxProductPricePlaceholder = $maxProductPrice ? ('до ' . $maxProductPrice) : 'максимальная цена товара')
 
+@php($pageTitle = $pageTitle ?? 'Каталог товаров')
+
 @extends('layouts.app')
 
-@section('title', 'Каталог товаров')
+@section('title', $pageTitle)
 
 @section('content')
     <div class="container py-4">
-        <h1 class="h3 mb-3">Каталог товаров</h1>
+        @if(isset($breadcrumbs))
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    @foreach($breadcrumbs as $crumb)
+                        <li class="breadcrumb-item @if($loop->last) active @endif" @if($loop->last) aria-current="page" @endif>
+                            <a href="{{ $crumb['url'] }}">{{ $crumb['label'] }}</a>
+                        </li>
+                    @endforeach
+                </ol>
+            </nav>
+        @endif
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="h3 mb-0">{{ $pageTitle }}</h1>
+            @if(isset($backUrl))
+                <a href="{{ $backUrl }}" class="btn btn-outline-secondary btn-sm">Назад в каталог</a>
+            @endif
+        </div>
 
         @if($errors->any())
             <div class="alert alert-danger">
@@ -20,7 +39,7 @@
             </div>
         @endif
 
-        <form method="GET" action="{{ route('products.index') }}" class="card card-body mb-3">
+        <form method="GET" action="{{ request()->url() }}" class="card card-body mb-3">
             <div class="row g-2 align-items-end">
                 <div class="col-12 col-lg-4">
                     <label for="q" class="form-label mb-1">Поиск</label>
@@ -31,6 +50,30 @@
                            class="form-control"
                            placeholder="Название или артикул">
                 </div>
+
+                <div class="col-6 col-lg-3">
+                    <label for="sort" class="form-label mb-1">Сортировка</label>
+                    <select name="sort" id="sort" class="form-select">
+                        <option value="new" @selected($sort === 'new')>Сначала новые</option>
+                        <option value="price_asc" @selected($sort === 'price_asc')>Цена: по возрастанию</option>
+                        <option value="price_desc" @selected($sort === 'price_desc')>Цена: по убыванию</option>
+                        <option value="name_asc" @selected($sort === 'name_asc')>Название: А → Я</option>
+                        <option value="name_desc" @selected($sort === 'name_desc')>Название: Я → А</option>
+                        <option value="stock_desc" @selected($sort === 'stock_desc')>Наличие: больше → меньше</option>
+                        <option value="stock_asc" @selected($sort === 'stock_asc')>Наличие: меньше → больше</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-lg-2">
+                    <label for="per_page" class="form-label mb-1">На странице</label>
+                    <select name="per_page" id="per_page" class="form-select">
+                        @foreach([10, 25, 50, 100] as $option)
+                            <option value="{{ $option }}" @selected($perPage == $option)>{{ $option }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="w-100"></div>
 
                 <div class="col-6 col-lg-2">
                     <label for="min_price" class="form-label mb-1">Цена от</label>
@@ -56,29 +99,7 @@
                            class="form-control">
                 </div>
 
-                <div class="col-6 col-lg-2">
-                    <label for="sort" class="form-label mb-1">Сортировка</label>
-                    <select name="sort" id="sort" class="form-select">
-                        <option value="new" @selected($sort === 'new')>Сначала новые</option>
-                        <option value="price_asc" @selected($sort === 'price_asc')>Цена: по возрастанию</option>
-                        <option value="price_desc" @selected($sort === 'price_desc')>Цена: по убыванию</option>
-                        <option value="name_asc" @selected($sort === 'name_asc')>Название: А → Я</option>
-                        <option value="name_desc" @selected($sort === 'name_desc')>Название: Я → А</option>
-                        <option value="stock_desc" @selected($sort === 'stock_desc')>Наличие: больше → меньше</option>
-                        <option value="stock_asc" @selected($sort === 'stock_asc')>Наличие: меньше → больше</option>
-                    </select>
-                </div>
-
-                <div class="col-6 col-lg-2">
-                    <label for="per_page" class="form-label mb-1">На странице</label>
-                    <select name="per_page" id="per_page" class="form-select">
-                        @foreach([10, 25, 50, 100] as $option)
-                            <option value="{{ $option }}" @selected($perPage == $option)>{{ $option }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-12 col-lg-4 mt-2">
+                <div class="col-12 col-lg-4">
                     <div class="form-check">
                         <input type="checkbox"
                                name="in_stock"
@@ -90,7 +111,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-8 mt-2 d-flex justify-content-end gap-2">
+                <div class="col-12 col-lg-4 d-flex justify-content-end gap-2">
                     <button type="submit" class="btn btn-primary">Применить</button>
                     <a href="{{ route('products.index', ['per_page' => $perPage]) }}"
                        class="btn btn-outline-secondary">
@@ -117,6 +138,9 @@
 
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ $product->name }}</h5>
+                            <div class="text-muted small mb-2">
+                                {{ $product->category?->name ?? 'Без категории' }}
+                            </div>
                             <p class="fw-semibold mb-3">{{ number_format($product->price, 0, ',', ' ') }} ₽</p>
 
                             @php($detailsUrl = Route::has('products.show') ? route('products.show', $product) : '#')

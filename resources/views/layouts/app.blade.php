@@ -11,6 +11,8 @@
         <a href="{{ route('home') }}" class="navbar-brand">Laravel Shop</a>
 
         <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('categories.index') }}" class="btn btn-outline-primary btn-sm">Каталог</a>
+            <a href="{{ route('products.index') }}" class="btn btn-outline-primary btn-sm">Все товары</a>
 
             @guest
                 <a href="{{ route('login.form') }}" class="btn btn-primary btn-sm">Вход</a>

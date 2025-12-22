@@ -26,6 +26,7 @@
 
                 <div class="mb-3 text-muted small">
                     <div>Артикул: {{ $product->sku }}</div>
+                    <div>Категория: {{ $product->category?->name ?? '-' }}</div>
                     <div>В наличии: {{ $product->stock }}</div>
                 </div>
 
