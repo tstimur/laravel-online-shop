@@ -143,10 +143,20 @@
                             </div>
                             <p class="fw-semibold mb-3">{{ number_format($product->price, 0, ',', ' ') }} ₽</p>
 
-                            @php($detailsUrl = Route::has('products.show') ? route('products.show', $product) : '#')
-                            <a href="{{ $detailsUrl }}" class="btn btn-outline-primary mt-auto">
-                                Подробнее
-                            </a>
+                            <div class="d-flex gap-2 mt-auto">
+                                @php($detailsUrl = Route::has('products.show') ? route('products.show', $product) : '#')
+                                <a href="{{ $detailsUrl }}" class="btn btn-outline-primary flex-grow-1">
+                                    Подробнее
+                                </a>
+                                <form method="POST"
+                                      action="{{ route('cart.items.store', $product) }}"
+                                      data-ajax-cart="1"
+                                      class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn btn-primary">В корзину</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
