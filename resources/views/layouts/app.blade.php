@@ -26,6 +26,7 @@
             @endguest
 
             @auth
+                <a href="{{ route('orders.index') }}" class="btn btn-outline-primary btn-sm">Мои заказы</a>
                 <a href="{{ route('profile.form') }}" class="btn btn-outline-secondary btn-sm">Профиль</a>
                 <form method="POST" action="{{ route('logout') }}" class="d-inline">
                     @csrf
@@ -51,6 +52,14 @@
             const badge = document.querySelector('[data-cart-count]');
             if (!badge) return;
             badge.textContent = String(count ?? 0);
+            toggleOrderBlock(count);
+        }
+
+        function toggleOrderBlock(count) {
+            const block = document.querySelector('[data-order-block]');
+            if (!block) return;
+            const hasItems = Number(count ?? 0) > 0;
+            block.classList.toggle('d-none', !hasItems);
         }
 
         async function submitCartForm(form) {

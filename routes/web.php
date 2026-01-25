@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +29,17 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/{id}', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.form');
     Route::post('/change-password', [AuthController::class, 'updatePassword'])->name('password.update');
+
+    Route::post('/profile/addresses', [AddressController::class, 'store'])->name('addresses.store');
+    Route::patch('/profile/addresses/{address}', [AddressController::class, 'update'])->name('addresses.update');
+    Route::delete('/profile/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
+    Route::patch('/profile/addresses/{address}/default', [AddressController::class, 'setDefault'])
+        ->name('addresses.default');
+
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])
+        ->name('orders.status.update');
 });
 
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');

@@ -117,9 +117,7 @@
                     @method('DELETE')
                     <button type="submit" class="btn btn-outline-danger">Очистить корзину</button>
                 </form>
-                <button type="button" class="btn btn-primary" disabled>Оформить заказ</button>
             </div>
         </div>
     </div>
 @endif
-

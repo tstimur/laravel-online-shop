@@ -23,6 +23,7 @@ use Illuminate\Notifications\Notifiable;
  *
  * @property Collection|Order[] $orders
  * @property Collection|Cart[] $carts
+ * @property Collection|Address[] $addresses
  */
 class User extends Authenticatable
 {
@@ -76,6 +77,12 @@ class User extends Authenticatable
     public function carts(): HasMany
     {
         return $this->hasMany(Cart::class);
+    }
+
+    /** Связь с адресами */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class);
     }
 
     /** Полное имя */

@@ -68,8 +68,11 @@ class AuthController extends Controller
     public function showProfile(): Factory|View
     {
         $user = Auth::user();
+        $addresses = $user
+            ? $user->addresses()->orderByDesc('is_default')->orderByDesc('created_at')->get()
+            : collect();
 
-        return view('auth.profile', compact('user'));
+        return view('auth.profile', compact('user', 'addresses'));
     }
 
     public function updateProfile(UpdateProfileRequest $request): RedirectResponse

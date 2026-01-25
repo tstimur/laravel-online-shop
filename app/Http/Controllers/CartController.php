@@ -11,15 +11,25 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
     public function index(SessionCartService $cart): Factory|View
     {
+        $defaultAddress = null;
+        if (Auth::check()) {
+            $defaultAddress = Auth::user()
+                ?->addresses()
+                ->where('is_default', true)
+                ->first();
+        }
+
         return view('cart.index', [
             'items' => $cart->getItems(),
             'totalQuantity' => $cart->getTotalQuantity(),
             'totalPrice' => $cart->getTotalPrice(),
+            'defaultAddress' => $defaultAddress,
         ]);
     }
 
@@ -80,4 +90,3 @@ class CartController extends Controller
             ->with('cartCount', $payload['cartCount']);
     }
 }
-

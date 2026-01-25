@@ -11,16 +11,46 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property int $id
  * @property int $user_id
+ * @property int|null $address_id
  * @property float $total
  * @property string $status
+ * @property string $payment_method
  * @property string|null $shipping_address
+ *
+ * @property-read Address|null $address
+ * @property-read string $status_label
+ * @property-read string $payment_method_label
  */
 class Order extends Model
 {
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_PAID = 'paid';
+    public const STATUS_SHIPPED = 'shipped';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_CANCELED = 'canceled';
+
+    public const STATUS_LABELS = [
+        self::STATUS_PENDING => 'Ожидает оплаты',
+        self::STATUS_PAID => 'Оплачен',
+        self::STATUS_SHIPPED => 'Отправлен',
+        self::STATUS_COMPLETED => 'Завершен',
+        self::STATUS_CANCELED => 'Отменен',
+    ];
+
+    public const PAYMENT_METHOD_CASH = 'cash';
+    public const PAYMENT_METHOD_CARD = 'card';
+
+    public const PAYMENT_METHOD_LABELS = [
+        self::PAYMENT_METHOD_CASH => 'Наличными при получении',
+        self::PAYMENT_METHOD_CARD => 'Картой при получении',
+    ];
+
     protected $fillable = [
         'user_id',
+        'address_id',
         'total',
         'status',
+        'payment_method',
         'shipping_address'
     ];
 
@@ -29,8 +59,23 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function address(): BelongsTo
+    {
+        return $this->belongsTo(Address::class);
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return self::STATUS_LABELS[$this->status] ?? $this->status;
+    }
+
+    public function getPaymentMethodLabelAttribute(): string
+    {
+        return self::PAYMENT_METHOD_LABELS[$this->payment_method] ?? $this->payment_method;
     }
 }
