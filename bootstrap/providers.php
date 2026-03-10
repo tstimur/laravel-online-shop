@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Models\Providers\AppServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
+    AppServiceProvider::class,
 ];
