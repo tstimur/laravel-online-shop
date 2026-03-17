@@ -6,10 +6,12 @@ namespace App\Service;
 
 use App\DTO\RegisterDto;
 use App\DTO\UpdateProfileDto;
+use App\DTO\AdminUserDto;
 use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class UserService
@@ -61,5 +63,68 @@ class UserService
 
         $user->password = Hash::make($newPassword);
         $user->save();
+    }
+
+    public function createFromAdmin(AdminUserDto $dto): User
+    {
+        $user = new User();
+        $user->first_name = $dto->firstName;
+        $user->last_name = $dto->lastName;
+        $user->email = $dto->email;
+        $user->phone = $dto->phone;
+        $user->status = $dto->status;
+        $user->password = Hash::make((string) $dto->password);
+
+        if ($dto->avatar) {
+            $user->avatar = $this->storeAvatar($dto->avatar);
+        }
+
+        $user->save();
+        $user->roles()->sync($dto->roles);
+
+        return $user;
+    }
+
+    public function updateFromAdmin(User $user, AdminUserDto $dto): User
+    {
+        $user->first_name = $dto->firstName;
+        $user->last_name = $dto->lastName;
+        $user->email = $dto->email;
+        $user->phone = $dto->phone;
+        $user->status = $dto->status;
+
+        if ($dto->avatar) {
+            $this->deleteAvatarIfExists($user->avatar);
+            $user->avatar = $this->storeAvatar($dto->avatar);
+        }
+
+        $user->save();
+        $user->roles()->sync($dto->roles);
+
+        return $user;
+    }
+
+    public function resetPassword(User $user, string $password): void
+    {
+        $user->password = Hash::make($password);
+        $user->save();
+    }
+
+    public function delete(User $user): void
+    {
+        $this->deleteAvatarIfExists($user->avatar);
+        $user->delete();
+    }
+
+    private function storeAvatar(\Illuminate\Http\UploadedFile $file): string
+    {
+        return $file->store('avatars', 'public');
+    }
+
+    private function deleteAvatarIfExists(?string $path): void
+    {
+        if ($path) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

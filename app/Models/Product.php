@@ -17,11 +17,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $stock
  * @property string $sku
  * @property string|null $image
+ * @property string $status
  * @property int|null $category_id
  */
 class Product extends Model
 {
     use HasFactory;
+
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_INACTIVE = 'inactive';
+
+    public const STATUSES = [
+        self::STATUS_ACTIVE,
+        self::STATUS_INACTIVE,
+    ];
 
     protected $fillable = [
         'name',
@@ -30,6 +39,7 @@ class Product extends Model
         'stock',
         'sku',
         'image',
+        'status',
         'category_id',
     ];
 

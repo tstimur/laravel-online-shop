@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\DTO\ProductFilterDto;
+use App\DTO\ProductDto;
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
@@ -65,6 +68,40 @@ class ProductService
         return $product->load('category');
     }
 
+    public function create(ProductDto $dto): Product
+    {
+        $product = new Product();
+        $product->fill($dto->toProductData());
+
+        if ($dto->image) {
+            $product->image = $this->storeImage($dto->image);
+        }
+
+        $product->save();
+
+        return $product;
+    }
+
+    public function update(Product $product, ProductDto $dto): Product
+    {
+        $product->fill($dto->toProductData());
+
+        if ($dto->image) {
+            $this->deleteImageIfExists($product->image);
+            $product->image = $this->storeImage($dto->image);
+        }
+
+        $product->save();
+
+        return $product;
+    }
+
+    public function delete(Product $product): void
+    {
+        $this->deleteImageIfExists($product->image);
+        $product->delete();
+    }
+
     private function applyFilters(Builder $query, ProductFilterDto $dto): void
     {
         if ($dto->q !== null) {
@@ -110,6 +147,18 @@ class ProductService
             default:
                 $query->orderByDesc('created_at');
                 break;
+        }
+    }
+
+    private function storeImage(UploadedFile $file): string
+    {
+        return $file->store('products', 'public');
+    }
+
+    private function deleteImageIfExists(?string $path): void
+    {
+        if ($path) {
+            Storage::disk('public')->delete($path);
         }
     }
 }

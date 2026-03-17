@@ -29,6 +29,14 @@ class Order extends Model
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_CANCELED = 'canceled';
 
+    public const STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_PAID,
+        self::STATUS_SHIPPED,
+        self::STATUS_COMPLETED,
+        self::STATUS_CANCELED,
+    ];
+
     public const STATUS_LABELS = [
         self::STATUS_PENDING => 'Ожидает оплаты',
         self::STATUS_PAID => 'Оплачен',
@@ -39,6 +47,11 @@ class Order extends Model
 
     public const PAYMENT_METHOD_CASH = 'cash';
     public const PAYMENT_METHOD_CARD = 'card';
+
+    public const PAYMENT_METHODS = [
+        self::PAYMENT_METHOD_CASH,
+        self::PAYMENT_METHOD_CARD,
+    ];
 
     public const PAYMENT_METHOD_LABELS = [
         self::PAYMENT_METHOD_CASH => 'Наличными при получении',

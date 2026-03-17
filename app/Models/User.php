@@ -8,6 +8,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,9 +19,12 @@ use Illuminate\Notifications\Notifiable;
  * @property string $email
  * @property string|null $phone
  * @property string $password
+ * @property string $status
+ * @property string|null $avatar
  *
  * @property-read string $full_name
  *
+ * @property Collection|Role[] $roles
  * @property Collection|Order[] $orders
  * @property Collection|Cart[] $carts
  * @property Collection|Address[] $addresses
@@ -30,6 +34,14 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory;
     use Notifiable;
+
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_BLOCKED = 'blocked';
+
+    public const STATUSES = [
+        self::STATUS_ACTIVE,
+        self::STATUS_BLOCKED,
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -43,6 +55,8 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'phone',
+        'status',
+        'avatar',
     ];
 
     /**
@@ -73,6 +87,12 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    /** Связь с ролями */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class);
+    }
+
     /** Связь с корзинами */
     public function carts(): HasMany
     {
@@ -89,5 +109,34 @@ class User extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+
+    public function hasRole(string $slug): bool
+    {
+        if ($this->relationLoaded('roles')) {
+            return $this->roles->contains('slug', $slug);
+        }
+
+        return $this->roles()
+            ->where('slug', $slug)
+            ->exists();
+    }
+
+    /**
+     * @param array<int, string> $slugs
+     */
+    public function hasAnyRole(array $slugs): bool
+    {
+        if ($slugs === []) {
+            return false;
+        }
+
+        if ($this->relationLoaded('roles')) {
+            return $this->roles->whereIn('slug', $slugs)->isNotEmpty();
+        }
+
+        return $this->roles()
+            ->whereIn('slug', $slugs)
+            ->exists();
     }
 }

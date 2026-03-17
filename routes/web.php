@@ -6,6 +6,11 @@ use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -53,3 +58,17 @@ Route::post('/cart/items/{product}', [CartController::class, 'store'])->name('ca
 Route::patch('/cart/items/{product}', [CartController::class, 'update'])->name('cart.items.update');
 Route::delete('/cart/items/{product}', [CartController::class, 'destroy'])->name('cart.items.destroy');
 Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+        Route::resource('roles', RoleController::class)->except(['show']);
+        Route::resource('users', UserController::class);
+        Route::patch('users/{user}/password', [UserController::class, 'resetPassword'])
+            ->name('users.password');
+        Route::resource('products', ProductController::class);
+        Route::resource('orders', AdminOrderController::class);
+    });
