@@ -15,7 +15,7 @@ use App\Service\AdminOrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-class OrderController extends Controller
+class OrderAdminController extends Controller
 {
     public function index(): View
     {

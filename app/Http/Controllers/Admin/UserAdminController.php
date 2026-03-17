@@ -16,7 +16,7 @@ use App\Service\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-class UserController extends Controller
+class UserAdminController extends Controller
 {
     public function index(): View
     {

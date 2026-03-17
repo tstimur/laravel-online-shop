@@ -7,10 +7,10 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\OrderAdminController;
+use App\Http\Controllers\Admin\ProductAdminController;
 use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -66,9 +66,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::resource('roles', RoleController::class)->except(['show']);
-        Route::resource('users', UserController::class);
-        Route::patch('users/{user}/password', [UserController::class, 'resetPassword'])
+        Route::resource('users', UserAdminController::class);
+        Route::patch('users/{user}/password', [UserAdminController::class, 'resetPassword'])
             ->name('users.password');
-        Route::resource('products', ProductController::class);
-        Route::resource('orders', AdminOrderController::class);
+        Route::resource('products', ProductAdminController::class);
+        Route::resource('orders', OrderAdminController::class);
     });

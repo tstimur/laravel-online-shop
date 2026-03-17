@@ -14,7 +14,7 @@ use App\Service\ProductService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-class ProductController extends Controller
+class ProductAdminController extends Controller
 {
     public function index(): View
     {
