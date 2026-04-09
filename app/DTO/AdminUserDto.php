@@ -10,9 +10,6 @@ use Spatie\LaravelData\Data;
 
 class AdminUserDto extends Data
 {
-    /**
-     * @param array<int, int> $roles
-     */
     public function __construct(
         public string $firstName,
         public string $lastName,
@@ -20,18 +17,13 @@ class AdminUserDto extends Data
         public ?string $phone,
         public string $status,
         public ?string $password,
-        public array $roles,
+        public int $roleId,
         public ?UploadedFile $avatar,
     ) {
     }
 
     public static function fromRequest(FormRequest $request): self
     {
-        $roles = $request->validated('roles', []);
-        if (!is_array($roles)) {
-            $roles = [];
-        }
-
         return new self(
             $request->validated('first_name'),
             $request->validated('last_name'),
@@ -39,7 +31,7 @@ class AdminUserDto extends Data
             $request->validated('phone'),
             $request->validated('status'),
             $request->validated('password'),
-            array_map('intval', $roles),
+            (int) $request->validated('role_id'),
             $request->file('avatar')
         );
     }

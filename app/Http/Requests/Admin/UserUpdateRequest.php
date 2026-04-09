@@ -43,8 +43,7 @@ class UserUpdateRequest extends FormRequest
                 Rule::unique('users', 'phone')->ignore($userId),
             ],
             'status' => ['required', Rule::in(User::STATUSES)],
-            'roles' => ['nullable', 'array'],
-            'roles.*' => ['integer', 'exists:roles,id'],
+            'role_id' => ['required', 'integer', 'exists:roles,id'],
             'avatar' => ['nullable', 'image', 'max:2048'],
         ];
     }

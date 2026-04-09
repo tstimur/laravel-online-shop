@@ -10,7 +10,7 @@
                 'method' => 'PUT',
                 'user' => $user,
                 'roles' => $roles,
-                'selectedRoles' => $user->roles->pluck('id')->all(),
+                'selectedRoleId' => $user->roles->pluck('id')->first(),
                 'showPassword' => false,
             ])
         </div>

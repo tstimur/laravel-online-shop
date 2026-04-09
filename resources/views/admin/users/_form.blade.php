@@ -1,4 +1,4 @@
-@php($selectedRoles = old('roles', $selectedRoles ?? []))
+@php($selectedRoleId = old('role_id', $selectedRoleId ?? null))
 
 <form method="POST" action="{{ $action }}" enctype="multipart/form-data">
     @csrf
@@ -106,19 +106,19 @@
             </div>
 
             <div class="mb-3">
-                <label for="roles" class="form-label">Roles</label>
-                <select name="roles[]"
-                        id="roles"
-                        class="form-select @error('roles') is-invalid @enderror"
-                        multiple>
+                <label for="role_id" class="form-label">Role</label>
+                <select name="role_id"
+                        id="role_id"
+                        class="form-select @error('role_id') is-invalid @enderror"
+                        required>
                     @foreach($roles as $role)
                         <option value="{{ $role->id }}"
-                            @selected(in_array($role->id, $selectedRoles, true))>
+                            @selected((int) $role->id === (int) $selectedRoleId)>
                             {{ $role->name }}
                         </option>
                     @endforeach
                 </select>
-                @error('roles')
+                @error('role_id')
                 <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>

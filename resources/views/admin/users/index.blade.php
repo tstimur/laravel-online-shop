@@ -15,7 +15,7 @@
                         <th>User</th>
                         <th>Email</th>
                         <th>Status</th>
-                        <th>Roles</th>
+                        <th>Role</th>
                         <th class="text-end">Actions</th>
                     </tr>
                     </thead>
@@ -34,7 +34,7 @@
                                     <span class="badge text-bg-secondary">blocked</span>
                                 @endif
                             </td>
-                            <td>{{ $user->roles->pluck('name')->join(', ') ?: '-' }}</td>
+                            <td>{{ $user->roles->first()?->name ?? '-' }}</td>
                             <td class="text-end">
                                 <a href="{{ route('admin.users.show', $user) }}"
                                    class="btn btn-outline-secondary btn-sm">

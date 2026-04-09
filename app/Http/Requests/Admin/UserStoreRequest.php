@@ -28,8 +28,7 @@ class UserStoreRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20', 'unique:users,phone'],
             'status' => ['required', Rule::in(User::STATUSES)],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'roles' => ['nullable', 'array'],
-            'roles.*' => ['integer', 'exists:roles,id'],
+            'role_id' => ['required', 'integer', 'exists:roles,id'],
             'avatar' => ['nullable', 'image', 'max:2048'],
         ];
     }

@@ -7,7 +7,9 @@ namespace App\Service;
 use App\DTO\RegisterDto;
 use App\DTO\UpdateProfileDto;
 use App\DTO\AdminUserDto;
+use App\Models\Role;
 use App\Models\User;
+use App\Service\UserNotificationService;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,8 +19,10 @@ use Illuminate\Validation\ValidationException;
 class UserService
 {
     public function __construct(
+        private readonly UserNotificationService $notificationService,
     ) {
     }
+
     public function register(RegisterDto $dto): User
     {
         $user = new User();
@@ -27,6 +31,14 @@ class UserService
         $user->email = $dto->email;
         $user->password = Hash::make($dto->password);
         $user->save();
+
+        // По умолчанию каждому пользователю назначаем одну роль: user (если роль существует).
+        $defaultRoleId = Role::query()->where('slug', Role::ROLE_USER)->value('id');
+        if ($defaultRoleId) {
+            $user->roles()->sync([(int) $defaultRoleId]);
+        }
+
+        $this->notificationService->sendWelcome($user);
 
         // TODO: после изучения очередей добавить событие для отправки приветственного письма:
         // event(new Registered($user));
@@ -80,7 +92,7 @@ class UserService
         }
 
         $user->save();
-        $user->roles()->sync($dto->roles);
+        $user->roles()->sync([$dto->roleId]);
 
         return $user;
     }
@@ -99,7 +111,7 @@ class UserService
         }
 
         $user->save();
-        $user->roles()->sync($dto->roles);
+        $user->roles()->sync([$dto->roleId]);
 
         return $user;
     }

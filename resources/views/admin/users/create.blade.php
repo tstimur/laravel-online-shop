@@ -10,7 +10,7 @@
                 'method' => 'POST',
                 'user' => null,
                 'roles' => $roles,
-                'selectedRoles' => $defaultRoleId ? [$defaultRoleId] : [],
+                'selectedRoleId' => $defaultRoleId,
                 'showPassword' => true,
             ])
         </div>

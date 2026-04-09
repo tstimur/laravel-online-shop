@@ -30,7 +30,7 @@
                     <div class="mb-2"><strong>Phone:</strong> {{ $user->phone ?? '-' }}</div>
                     <div class="mb-2"><strong>Status:</strong> {{ $user->status }}</div>
                     <div class="mb-2">
-                        <strong>Roles:</strong> {{ $user->roles->pluck('name')->join(', ') ?: '-' }}
+                        <strong>Role:</strong> {{ $user->roles->first()?->name ?? '-' }}
                     </div>
                 </div>
             </div>
