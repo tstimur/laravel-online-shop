@@ -10,12 +10,18 @@ use App\Http\Requests\Admin\RoleStoreRequest;
 use App\Http\Requests\Admin\RoleUpdateRequest;
 use App\Models\Role;
 use App\Service\RoleService;
+use App\Service\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class RoleController extends Controller
 {
+    public function __construct(
+        private readonly RoleService $roleService,
+    )
+    {}
+
     public function index(): View
     {
         $roles = Role::query()->orderBy('name')->get();
@@ -28,9 +34,11 @@ class RoleController extends Controller
         return view('admin.roles.create');
     }
 
-    public function store(RoleStoreRequest $request, RoleService $service): RedirectResponse
+    public function store(RoleStoreRequest $request): RedirectResponse
     {
-        $service->create(RoleDto::fromRequest($request));
+        $this
+            ->roleService
+            ->create(RoleDto::fromRequest($request));
 
         return redirect()
             ->route('admin.roles.index')
@@ -45,9 +53,9 @@ class RoleController extends Controller
     public function update(
         RoleUpdateRequest $request,
         Role $role,
-        RoleService $service
+
     ): RedirectResponse {
-        $service->update($role, RoleDto::fromRequest($request));
+        $this->roleService->update($role, RoleDto::fromRequest($request));
 
         return redirect()
             ->route('admin.roles.index')
