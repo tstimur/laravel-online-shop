@@ -13,7 +13,10 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Service\UserNotificationService;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 
 Route::view('/', 'main')->name('home');
 
@@ -30,6 +33,34 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    Route::get('/email/verify', function () {
+        return view('auth.verify-email');
+    })->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', function (
+        EmailVerificationRequest $request,
+        UserNotificationService $notificationService,
+    ) {
+        $user = $request->user();
+        $wasVerified = $user->hasVerifiedEmail();
+
+        $request->fulfill();
+
+        if (!$wasVerified) {
+            $notificationService->sendWelcome($user);
+        }
+
+        return redirect()
+            ->route('profile.form')
+            ->with('success', 'Email успешно подтверждён!');
+    })->middleware('signed')->name('verification.verify');
+
+    Route::post('/email/verification-notification', function (Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+
+        return back()->with('success', 'Ссылка для подтверждения отправлена на вашу почту.');
+    })->middleware('throttle:6,1')->name('verification.send');
+
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile.form');
     Route::patch('/profile/{id}', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.form');
@@ -41,10 +72,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/addresses/{address}/default', [AddressController::class, 'setDefault'])
         ->name('addresses.default');
 
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])
-        ->name('orders.status.update');
+    Route::middleware('verified')->group(function () {
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+        Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])
+            ->name('orders.status.update');
+    });
 });
 
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');

@@ -33,12 +33,15 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): RedirectResponse
     {
         $dto = RegisterDto::fromRequest($request);
-        $this
+        $user = $this
             ->userService
             ->register($dto);
 
+        Auth::login($user);
+        $request->session()->regenerate();
+
         return redirect()
-            ->route('login.form')
+            ->route('profile.form')
             ->with('status', 'User successfully registered!');
     }
 

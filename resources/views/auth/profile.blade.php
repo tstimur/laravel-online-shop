@@ -24,6 +24,21 @@
                             </div>
                         @endif
 
+                        @if(!$user->hasVerifiedEmail())
+                            <div class="alert alert-warning">
+                                <div class="fw-semibold mb-1">Email не подтверждён</div>
+                                <div class="small mb-2">
+                                    Подтвердите почту, перейдя по ссылке из письма. Без подтверждения некоторые функции могут быть недоступны.
+                                </div>
+                                <form method="POST" action="{{ route('verification.send') }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                        Отправить ссылку ещё раз
+                                    </button>
+                                </form>
+                            </div>
+                        @endif
+
                         <form id="profile-form" method="POST" action="{{ route('profile.update', $user) }}">
                             @csrf
                             @method('PATCH')

@@ -38,7 +38,7 @@ class UserService
             $user->roles()->sync([(int) $defaultRoleId]);
         }
 
-        $this->notificationService->sendWelcome($user);
+        $this->notificationService->sendEmailVerification($user);
 
         // TODO: после изучения очередей добавить событие для отправки приветственного письма:
         // event(new Registered($user));
