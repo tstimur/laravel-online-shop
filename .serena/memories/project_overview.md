@@ -1,0 +1,24 @@
+# laravel-online-shop: обзор проекта
+
+- Назначение: учебный интернет-магазин на Laravel 12 с пользовательской частью (каталог, категории, корзина, профиль, адреса, заказы, email-верификация) и админкой (роли, пользователи, товары, заказы).
+- Основной стек:
+  - PHP 8.4
+  - Laravel 12
+  - Eloquent ORM, FormRequest, middleware
+  - Spatie `laravel-data` для DTO
+  - Blade templates
+  - Vite + Tailwind CSS 4 + Axios (frontend сборка)
+  - PHPUnit 11 для тестов
+  - Docker / docker-compose для локального окружения
+- Ключевые директории:
+  - `app/Http/Controllers` и `app/Http/Controllers/Admin`
+  - `app/Http/Requests` и `app/Http/Requests/Admin`
+  - `app/Service` (бизнес-логика)
+  - `app/DTO` (типизированные входные данные)
+  - `app/Models`
+  - `resources/views`, `resources/js`, `resources/css`
+  - `database/migrations`, `database/seeders`, `database/factories`
+  - `routes/web.php`
+  - `tests/Feature`, `tests/Unit`
+- Архитектурный стиль: контроллеры тонкие, валидация в FormRequest, передача параметров через DTO, доменная логика в Service.
+- Доп. контекст из `docs/`: проект развивается пошагово (админ-панель, товары, пользователи/заказы, корзина сессии + AJAX, категории, фильтрация, email-верификация).
