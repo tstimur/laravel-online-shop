@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
         xml \
         bcmath \
         mbstring \
+        sockets \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Xdebug
