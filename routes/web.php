@@ -13,7 +13,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
-use App\Service\UserNotificationService;
+use App\Jobs\SendWelcomeAfterVerificationJob;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -39,7 +39,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/email/verify/{id}/{hash}', function (
         EmailVerificationRequest $request,
-        UserNotificationService $notificationService,
     ) {
         $user = $request->user();
         $wasVerified = $user->hasVerifiedEmail();
@@ -47,7 +46,7 @@ Route::middleware('auth')->group(function () {
         $request->fulfill();
 
         if (!$wasVerified) {
-            $notificationService->sendWelcome($user);
+            SendWelcomeAfterVerificationJob::dispatch($user->id);
         }
 
         return redirect()

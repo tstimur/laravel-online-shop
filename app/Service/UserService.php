@@ -7,9 +7,9 @@ namespace App\Service;
 use App\DTO\RegisterDto;
 use App\DTO\UpdateProfileDto;
 use App\DTO\AdminUserDto;
+use App\Jobs\SendRegistrationVerificationJob;
 use App\Models\Role;
 use App\Models\User;
-use App\Service\UserNotificationService;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -18,11 +18,6 @@ use Illuminate\Validation\ValidationException;
 
 class UserService
 {
-    public function __construct(
-        private readonly UserNotificationService $notificationService,
-    ) {
-    }
-
     public function register(RegisterDto $dto): User
     {
         $user = new User();
@@ -38,7 +33,7 @@ class UserService
             $user->roles()->sync([(int) $defaultRoleId]);
         }
 
-        $this->notificationService->sendEmailVerification($user);
+        SendRegistrationVerificationJob::dispatch($user->id);
 
         // TODO: после изучения очередей добавить событие для отправки приветственного письма:
         // event(new Registered($user));
