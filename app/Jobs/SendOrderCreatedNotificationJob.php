@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Models\User;
+use App\Models\Order;
 use App\Service\UserNotificationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Log;
 
-class SendWelcomeAfterVerificationJob implements ShouldQueue
+class SendOrderCreatedNotificationJob implements ShouldQueue
 {
     use Queueable;
 
@@ -22,19 +21,21 @@ class SendWelcomeAfterVerificationJob implements ShouldQueue
     public array $backoff = [10, 30, 60];
 
     public function __construct(
-        private readonly int $userId,
+        private readonly int $orderId,
     ) {
-        $this->onQueue('users.notifications.welcome');
+        $this->onQueue('orders.notifications.created');
     }
 
     public function handle(UserNotificationService $notificationService): void
     {
-        $user = User::query()->find($this->userId);
-        if (!$user) {
+        $order = Order::query()
+            ->with(['user', 'items.product'])
+            ->find($this->orderId);
+
+        if (!$order) {
             return;
         }
 
-        $notificationService->sendWelcome($user);
-        Log::info('сообщение успешно доставлено');
+        $notificationService->sendOrderCreated($order);
     }
 }

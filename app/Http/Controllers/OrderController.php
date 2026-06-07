@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderStatusRequest;
 use App\Http\Requests\OrderStoreRequest;
+use App\Jobs\SendOrderCreatedNotificationJob;
 use App\Models\Order;
 use App\Service\OrderService;
 use App\Service\SessionCartService;
@@ -36,11 +37,12 @@ class OrderController extends Controller
     ): RedirectResponse {
         $user = Auth::user();
 
-        $service->createOrder(
+        $order = $service->createOrder(
             $user,
             $request->validated()['payment_method'],
             $cart
         );
+        SendOrderCreatedNotificationJob::dispatch($order->id);
 
         return redirect()
             ->route('orders.index')
