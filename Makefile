@@ -38,3 +38,4 @@ install:
 success-message:
 	@echo "You can now access the application at http://localhost"
 	@echo "Good luck! 🚀"
+
