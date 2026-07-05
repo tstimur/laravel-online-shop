@@ -25,6 +25,8 @@ class CartController extends Controller
                 ->first();
         }
 
+
+
         return view('cart.index', [
             'items' => $cart->getItems(),
             'totalQuantity' => $cart->getTotalQuantity(),
@@ -35,6 +37,7 @@ class CartController extends Controller
 
     public function store(Product $product, Request $request, SessionCartService $cart): JsonResponse|RedirectResponse
     {
+
         $data = $request->validate([
             'quantity' => ['nullable', 'integer', 'min:1'],
         ]);
@@ -42,13 +45,26 @@ class CartController extends Controller
         $cart->add($product, (int) ($data['quantity'] ?? 1));
 
         return $this->respond($request, $cart);
+
     }
 
+    /**
+     * Обновление корзины
+     *
+     * @param Product $product
+     * @param Request $request
+     * @param SessionCartService $cart
+     * @return JsonResponse|RedirectResponse
+     */
     public function update(Product $product, Request $request, SessionCartService $cart): JsonResponse|RedirectResponse
     {
         $data = $request->validate([
             'quantity' => ['required', 'integer', 'min:0'],
         ]);
+
+
+
+
 
         $cart->setQuantity($product, (int) $data['quantity']);
 
