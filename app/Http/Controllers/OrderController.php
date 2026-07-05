@@ -10,10 +10,12 @@ use App\Jobs\SendOrderCreatedNotificationJob;
 use App\Models\Order;
 use App\Service\OrderService;
 use App\Service\SessionCartService;
+use App\Service\YooKassaPaymentService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Throwable;
 
 class OrderController extends Controller
 {
@@ -21,7 +23,7 @@ class OrderController extends Controller
     {
         $orders = Order::query()
             ->where('user_id', Auth::id())
-            ->with(['items.product'])
+            ->with(['items.product', 'latestPayment.latestReceipt'])
             ->orderByDesc('created_at')
             ->get();
 
@@ -33,7 +35,8 @@ class OrderController extends Controller
     public function store(
         OrderStoreRequest $request,
         OrderService $service,
-        SessionCartService $cart
+        SessionCartService $cart,
+        YooKassaPaymentService $paymentService,
     ): RedirectResponse {
         $user = Auth::user();
 
@@ -42,11 +45,42 @@ class OrderController extends Controller
             $request->validated()['payment_method'],
             $cart
         );
+
         SendOrderCreatedNotificationJob::dispatch($order->id);
+
+        if ($order->payment_method === Order::PAYMENT_METHOD_YOOKASSA) {
+            try {
+                $payment = $paymentService->createPaymentForOrder($order);
+
+                return redirect()->away($payment->confirmation_url ?? route('orders.index'));
+            } catch (Throwable) {
+                return redirect()
+                    ->route('orders.index')
+                    ->with('error', 'Заказ создан, но ссылку на оплату получить не удалось. Попробуйте снова из списка заказов.');
+            }
+        }
 
         return redirect()
             ->route('orders.index')
             ->with('success', 'Заказ создан.');
+    }
+
+    public function pay(Order $order, YooKassaPaymentService $paymentService): RedirectResponse
+    {
+        $order = Order::query()
+            ->where('user_id', Auth::id())
+            ->whereKey($order->id)
+            ->firstOrFail();
+
+        try {
+            $payment = $paymentService->createPaymentForOrder($order);
+
+            return redirect()->away($payment->confirmation_url ?? route('orders.index'));
+        } catch (Throwable) {
+            return redirect()
+                ->route('orders.index')
+                ->with('error', 'Не удалось создать новую ссылку на оплату. Попробуйте позже.');
+        }
     }
 
     public function updateStatus(

@@ -41,6 +41,12 @@
                             <span class="text-muted">Оплата:</span>
                             {{ $order->payment_method_label }}
                         </div>
+                        @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_YOOKASSA && $order->latestPayment)
+                            <div class="mb-2">
+                                <span class="text-muted">Статус платежа:</span>
+                                {{ $order->latestPayment->status_label }}
+                            </div>
+                        @endif
                         <div class="mb-3">
                             <span class="text-muted">Адрес:</span>
                             {{ $order->shipping_address ?? '—' }}
@@ -62,12 +68,37 @@
 
                         @if($order->status === \App\Models\Order::STATUS_PENDING)
                             <div class="d-flex gap-2">
-                                <form method="POST" action="{{ route('orders.status.update', $order) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    <input type="hidden" name="status" value="canceled">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Отменить</button>
-                                </form>
+                                @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_CASH)
+                                    <form method="POST" action="{{ route('orders.status.update', $order) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="canceled">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Отменить</button>
+                                    </form>
+                                @endif
+
+                                @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_YOOKASSA)
+                                    @if($order->latestPayment?->status === \App\Models\OrderPayment::STATUS_PENDING && $order->latestPayment?->confirmation_url)
+                                        <a href="{{ $order->latestPayment->confirmation_url }}"
+                                           class="btn btn-primary btn-sm">
+                                            Перейти к оплате
+                                        </a>
+                                    @else
+                                        <form method="POST" action="{{ route('orders.pay', $order) }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-primary btn-sm">Сформировать новую ссылку</button>
+                                        </form>
+                                    @endif
+                                @endif
+                            </div>
+                        @endif
+
+                        @if($order->latestPayment?->latestReceipt)
+                            <div class="mt-3 small text-muted">
+                                Чек: {{ $order->latestPayment->latestReceipt->status_label }}
+                                @if($order->latestPayment->latestReceipt->external_receipt_id)
+                                    ({{ $order->latestPayment->latestReceipt->external_receipt_id }})
+                                @endif
                             </div>
                         @endif
                     </div>

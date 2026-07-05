@@ -24,7 +24,7 @@
                     <div class="mb-2"><strong>User:</strong> {{ $order->user?->full_name ?? '-' }}</div>
                     <div class="mb-2"><strong>Email:</strong> {{ $order->user?->email ?? '-' }}</div>
                     <div class="mb-2"><strong>Status:</strong> {{ $order->status }}</div>
-                    <div class="mb-2"><strong>Payment:</strong> {{ $order->payment_method }}</div>
+                    <div class="mb-2"><strong>Payment:</strong> {{ $order->payment_method_label }}</div>
                     <div class="mb-2"><strong>Shipping address:</strong> {{ $order->shipping_address ?? '-' }}</div>
                     <div class="mb-2"><strong>Total:</strong> {{ number_format($order->total, 2, '.', ' ') }}</div>
                 </div>

@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $shipping_address
  *
  * @property-read Address|null $address
+ * @property-read OrderPayment|null $latestPayment
  * @property-read string $status_label
  * @property-read string $payment_method_label
  */
@@ -46,16 +48,16 @@ class Order extends Model
     ];
 
     public const PAYMENT_METHOD_CASH = 'cash';
-    public const PAYMENT_METHOD_CARD = 'card';
+    public const PAYMENT_METHOD_YOOKASSA = 'yookassa';
 
     public const PAYMENT_METHODS = [
         self::PAYMENT_METHOD_CASH,
-        self::PAYMENT_METHOD_CARD,
+        self::PAYMENT_METHOD_YOOKASSA,
     ];
 
     public const PAYMENT_METHOD_LABELS = [
         self::PAYMENT_METHOD_CASH => 'Наличными при получении',
-        self::PAYMENT_METHOD_CARD => 'Картой при получении',
+        self::PAYMENT_METHOD_YOOKASSA => 'Онлайн через YooKassa',
     ];
 
     protected $fillable = [
@@ -80,6 +82,16 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(OrderPayment::class);
+    }
+
+    public function latestPayment(): HasOne
+    {
+        return $this->hasOne(OrderPayment::class)->latestOfMany();
     }
 
     public function getStatusLabelAttribute(): string

@@ -60,6 +60,10 @@ class OrderService
 
     public function markAsPaid(Order $order): void
     {
+        if ($order->status === Order::STATUS_PAID) {
+            return;
+        }
+
         if ($order->status !== Order::STATUS_PENDING) {
             throw ValidationException::withMessages([
                 'status' => 'Нельзя оплатить заказ в текущем статусе.',

@@ -35,7 +35,7 @@
 </p>
 <p>
     <strong>Способ оплаты:</strong>
-    {{ $order->payment_method === \App\Models\Order::PAYMENT_METHOD_CARD ? 'Оплачено онлайн картой' : 'Наличными при получении' }}
+    {{ $order->payment_method_label }}
 </p>
 </body>
 </html>

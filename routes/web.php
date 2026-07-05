@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\YooKassaController;
 use App\Jobs\SendWelcomeAfterVerificationJob;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -74,8 +75,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware('verified')->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+        Route::post('/orders/{order}/pay', [OrderController::class, 'pay'])->name('orders.pay');
         Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])
             ->name('orders.status.update');
+        Route::get('/payments/yookassa/return/{order}', [YooKassaController::class, 'return'])
+            ->name('payments.yookassa.return');
     });
 });
 
@@ -90,6 +94,7 @@ Route::post('/cart/items/{product}', [CartController::class, 'store'])->name('ca
 Route::patch('/cart/items/{product}', [CartController::class, 'update'])->name('cart.items.update');
 Route::delete('/cart/items/{product}', [CartController::class, 'destroy'])->name('cart.items.destroy');
 Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+Route::post('/payments/yookassa/webhook', [YooKassaController::class, 'webhook'])->name('payments.yookassa.webhook');
 
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')

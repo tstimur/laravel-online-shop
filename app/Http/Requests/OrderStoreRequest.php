@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Models\Order;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OrderStoreRequest extends FormRequest
 {
@@ -19,7 +21,7 @@ class OrderStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'payment_method' => ['required', 'in:cash,card'],
+            'payment_method' => ['required', Rule::in(Order::PAYMENT_METHODS)],
         ];
     }
 }

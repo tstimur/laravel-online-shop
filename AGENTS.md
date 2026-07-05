@@ -51,5 +51,5 @@ Start from `.env.example`. Local Docker defaults to PostgreSQL (`DB_HOST=db`, `D
 
 #### Пример:
 ```
-
+ctx7sk-e02971d2-d4d4-4f7a-9fab-3fb497484928
 ```

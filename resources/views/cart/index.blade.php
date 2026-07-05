@@ -57,11 +57,11 @@
                                         <input class="form-check-input"
                                                type="radio"
                                                name="payment_method"
-                                               id="payment-card"
-                                               value="card"
-                                            @checked(old('payment_method') === 'card')>
-                                        <label class="form-check-label" for="payment-card">
-                                            Картой при получении
+                                               id="payment-yookassa"
+                                               value="yookassa"
+                                            @checked(old('payment_method') === 'yookassa')>
+                                        <label class="form-check-label" for="payment-yookassa">
+                                            Онлайн через YooKassa: карта, СБП, SberPay, T-Pay, Alfa Pay
                                         </label>
                                     </div>
                                     @error('payment_method')
