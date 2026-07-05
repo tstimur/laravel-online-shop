@@ -62,6 +62,10 @@ class CartController extends Controller
             'quantity' => ['required', 'integer', 'min:0'],
         ]);
 
+
+
+
+
         $cart->setQuantity($product, (int) $data['quantity']);
 
         return $this->respond($request, $cart);
