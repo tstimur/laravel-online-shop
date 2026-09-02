@@ -26,8 +26,8 @@ RUN apt-get update && apt-get install -y \
         sockets \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Xdebug
-RUN pecl install xdebug && docker-php-ext-enable xdebug
+# Install Xdebug and PhpRedis.
+RUN pecl install xdebug redis && docker-php-ext-enable xdebug redis
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

@@ -4,22 +4,33 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\DTO\ProductFilterDto;
 use App\DTO\ProductDto;
+use App\DTO\ProductFilterDto;
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
     private const array PER_PAGE_OPTIONS = [10, 25, 50, 100];
+    private const string CATALOG_CACHE_VERSION_KEY = 'products:catalog:version';
 
     public function getMaxProductPrice(): ?string
     {
         /** @var string|null $max */
-        $max = Product::query()->max('price');
+        $max = Cache::remember(
+            $this->catalogCacheKey('max-price', []),
+            $this->catalogCacheTtl(),
+            static function (): ?string {
+                $max = Product::query()->max('price');
+
+                return $max === null ? null : (string) $max;
+            },
+        );
 
         return $max;
     }
@@ -27,40 +38,66 @@ class ProductService
     public function getMaxProductPriceForCategoryId(int $categoryId): ?string
     {
         /** @var string|null $max */
-        $max = Product::query()
-            ->where('category_id', $categoryId)
-            ->max('price');
+        $max = Cache::remember(
+            $this->catalogCacheKey('category:' . $categoryId . ':max-price', []),
+            $this->catalogCacheTtl(),
+            static function () use ($categoryId): ?string {
+                $max = Product::query()
+                    ->where('category_id', $categoryId)
+                    ->max('price');
+
+                return $max === null ? null : (string) $max;
+            },
+        );
 
         return $max;
     }
 
     public function getProducts(ProductFilterDto $dto): LengthAwarePaginator
     {
-        $query = Product::query()->with('category');
-        $this->applyFilters($query, $dto);
-
         $perPage = in_array($dto->per_page, self::PER_PAGE_OPTIONS, true) ? $dto->per_page : 10;
 
-        return $query
-            ->orderByDesc('id')
-            ->paginate($perPage)
-            ->withQueryString();
+        /** @var LengthAwarePaginator $products */
+        $products = Cache::remember(
+            $this->catalogCacheKey('list', $this->filterCacheParameters($dto, $perPage)),
+            $this->catalogCacheTtl(),
+            function () use ($dto, $perPage): LengthAwarePaginator {
+                $query = Product::query()->with('category');
+                $this->applyFilters($query, $dto);
+
+                return $query
+                    ->orderByDesc('id')
+                    ->paginate($perPage)
+                    ->withQueryString();
+            },
+        );
+
+        return $products;
     }
 
     public function getProductsByCategoryId(int $categoryId, ProductFilterDto $dto): LengthAwarePaginator
     {
-        $query = Product::query()
-            ->with('category')
-            ->where('category_id', $categoryId);
-
-        $this->applyFilters($query, $dto);
-
         $perPage = in_array($dto->per_page, self::PER_PAGE_OPTIONS, true) ? $dto->per_page : 10;
 
-        return $query
-            ->orderByDesc('id')
-            ->paginate($perPage)
-            ->withQueryString();
+        /** @var LengthAwarePaginator $products */
+        $products = Cache::remember(
+            $this->catalogCacheKey('category:' . $categoryId, $this->filterCacheParameters($dto, $perPage)),
+            $this->catalogCacheTtl(),
+            function () use ($categoryId, $dto, $perPage): LengthAwarePaginator {
+                $query = Product::query()
+                    ->with('category')
+                    ->where('category_id', $categoryId);
+
+                $this->applyFilters($query, $dto);
+
+                return $query
+                    ->orderByDesc('id')
+                    ->paginate($perPage)
+                    ->withQueryString();
+            },
+        );
+
+        return $products;
     }
 
     public function getProduct(Product $product): Product
@@ -78,6 +115,7 @@ class ProductService
         }
 
         $product->save();
+        $this->invalidateCatalogCache();
 
         return $product;
     }
@@ -92,6 +130,7 @@ class ProductService
         }
 
         $product->save();
+        $this->invalidateCatalogCache();
 
         return $product;
     }
@@ -100,6 +139,7 @@ class ProductService
     {
         $this->deleteImageIfExists($product->image);
         $product->delete();
+        $this->invalidateCatalogCache();
     }
 
     private function applyFilters(Builder $query, ProductFilterDto $dto): void
@@ -160,5 +200,53 @@ class ProductService
         if ($path) {
             Storage::disk('public')->delete($path);
         }
+    }
+
+    private function catalogCacheTtl(): int
+    {
+        return max(1, (int) env('PRODUCT_CATALOG_CACHE_TTL', 600));
+    }
+
+    /**
+     * @return array<string, bool|int|string|null>
+     */
+    private function filterCacheParameters(ProductFilterDto $dto, int $perPage): array
+    {
+        return [
+            'page' => Paginator::resolveCurrentPage(),
+            'per_page' => $perPage,
+            'q' => $dto->q,
+            'min_price' => $dto->min_price,
+            'max_price' => $dto->max_price,
+            'in_stock' => $dto->in_stock,
+            'sort' => $dto->sort,
+        ];
+    }
+
+    /**
+     * @param array<string, bool|int|string|null> $parameters
+     */
+    private function catalogCacheKey(string $scope, array $parameters): string
+    {
+        return sprintf(
+            'products:catalog:v%d:%s:%s',
+            $this->catalogCacheVersion(),
+            $scope,
+            hash('sha256', json_encode($parameters, JSON_THROW_ON_ERROR)),
+        );
+    }
+
+    private function catalogCacheVersion(): int
+    {
+        /** @var int $version */
+        $version = Cache::rememberForever(self::CATALOG_CACHE_VERSION_KEY, static fn (): int => 1);
+
+        return $version;
+    }
+
+    private function invalidateCatalogCache(): void
+    {
+        Cache::add(self::CATALOG_CACHE_VERSION_KEY, 1);
+        Cache::increment(self::CATALOG_CACHE_VERSION_KEY);
     }
 }
