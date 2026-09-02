@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 class ProductService
 {
     private const array PER_PAGE_OPTIONS = [10, 25, 50, 100];
+    private const int CATALOG_CACHE_TTL = 600;
     private const string CATALOG_CACHE_VERSION_KEY = 'products:catalog:version';
 
     public function getMaxProductPrice(): ?string
@@ -67,12 +68,11 @@ class ProductService
 
                 return $query
                     ->orderByDesc('id')
-                    ->paginate($perPage)
-                    ->withQueryString();
+                    ->paginate($perPage);
             },
         );
 
-        return $products;
+        return $this->appendPaginationQuery($products);
     }
 
     public function getProductsByCategoryId(int $categoryId, ProductFilterDto $dto): LengthAwarePaginator
@@ -92,12 +92,11 @@ class ProductService
 
                 return $query
                     ->orderByDesc('id')
-                    ->paginate($perPage)
-                    ->withQueryString();
+                    ->paginate($perPage);
             },
         );
 
-        return $products;
+        return $this->appendPaginationQuery($products);
     }
 
     public function getProduct(Product $product): Product
@@ -204,7 +203,7 @@ class ProductService
 
     private function catalogCacheTtl(): int
     {
-        return max(1, (int) env('PRODUCT_CATALOG_CACHE_TTL', 600));
+        return self::CATALOG_CACHE_TTL;
     }
 
     /**
@@ -221,6 +220,18 @@ class ProductService
             'in_stock' => $dto->in_stock,
             'sort' => $dto->sort,
         ];
+    }
+
+    private function appendPaginationQuery(LengthAwarePaginator $products): LengthAwarePaginator
+    {
+        return (clone $products)->appends(request()->only([
+            'per_page',
+            'q',
+            'min_price',
+            'max_price',
+            'in_stock',
+            'sort',
+        ]));
     }
 
     /**

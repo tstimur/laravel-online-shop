@@ -9,6 +9,7 @@ use App\DTO\ProductFilterDto;
 use App\Models\Category;
 use App\Models\Product;
 use App\Service\ProductService;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -108,6 +109,71 @@ class ProductCatalogCacheTest extends TestCase
         self::assertCount(1, $service->getProducts($filter));
     }
 
+    public function test_pagination_sorting_and_query_parameters_are_not_mixed_between_cache_hits(): void
+    {
+        for ($number = 1; $number <= 11; $number++) {
+            Product::factory()->create([
+                'name' => sprintf('Товар %02d', $number),
+                'price' => $number * 100,
+            ]);
+        }
+
+        $this->get('/products?sort=name_asc&per_page=10')
+            ->assertOk()
+            ->assertViewHas('products', static function (LengthAwarePaginator $products): bool {
+                return $products->total() === 11
+                    && $products->count() === 10
+                    && $products->getCollection()->pluck('name')->all() === [
+                        'Товар 01',
+                        'Товар 02',
+                        'Товар 03',
+                        'Товар 04',
+                        'Товар 05',
+                        'Товар 06',
+                        'Товар 07',
+                        'Товар 08',
+                        'Товар 09',
+                        'Товар 10',
+                    ];
+            });
+
+        $this->get('/products?sort=name_asc')
+            ->assertOk()
+            ->assertViewHas(
+                'products',
+                static function (LengthAwarePaginator $products): bool {
+                    $secondPageUrl = $products->url(2);
+
+                    return str_contains($secondPageUrl, 'sort=name_asc')
+                        && !str_contains($secondPageUrl, 'per_page=10');
+                },
+            );
+
+        $this->get('/products?sort=name_asc&per_page=10&page=2')
+            ->assertOk()
+            ->assertSee('Товар 11')
+            ->assertDontSee('Товар 01');
+    }
+
+    public function test_category_max_price_is_invalidated_after_product_update(): void
+    {
+        $service = app(ProductService::class);
+        $category = Category::query()->create(['name' => 'Категория', 'slug' => 'kategoriya']);
+        $product = Product::factory()->create([
+            'price' => 100,
+            'category_id' => $category->id,
+        ]);
+
+        self::assertSame('100', $service->getMaxProductPriceForCategoryId($category->id));
+
+        $service->update(
+            $product,
+            $this->productDto('Обновлённый товар', 200, $product->sku, $category->id),
+        );
+
+        self::assertSame('200', $service->getMaxProductPriceForCategoryId($category->id));
+    }
+
     /**
      * @return list<string>
      */
@@ -123,7 +189,7 @@ class ProductCatalogCacheTest extends TestCase
         ));
     }
 
-    private function productDto(string $name, float $price, string $sku): ProductDto
+    private function productDto(string $name, float $price, string $sku, ?int $categoryId = null): ProductDto
     {
         return new ProductDto(
             name: $name,
@@ -132,7 +198,7 @@ class ProductCatalogCacheTest extends TestCase
             stock: 10,
             sku: $sku,
             status: Product::STATUS_ACTIVE,
-            categoryId: null,
+            categoryId: $categoryId,
             image: null,
         );
     }
